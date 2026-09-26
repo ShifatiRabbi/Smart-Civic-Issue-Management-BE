@@ -68,4 +68,25 @@ public class AuthController {
         return ResponseEntity
                 .ok(ApiResponse.success("Token refreshed successfully", response));
     }
+
+    /*
+     * Purpose:
+     * Logout - client-facing confirmation endpoint.
+     *
+     * Why this is currently near-no-op:
+     * We have no server-side token store/blacklist yet (noted as a future
+     * enhancement in STEP-02d). A stateless JWT remains valid until it
+     * naturally expires (15 min), even after this call. Real invalidation
+     * requires Redis-backed blacklist (planned future tech per project scope).
+     *
+     * Why the endpoint still exists and requires auth:
+     * - Gives the frontend one stable place to call on logout (clear its
+     *   stored tokens), regardless of how the backend implements it later.
+     * - When Redis blacklist is added, this method's body changes
+     *   internally; the API contract for clients stays identical.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
+    }
 }
