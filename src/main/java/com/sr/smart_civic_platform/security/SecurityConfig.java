@@ -2,6 +2,7 @@ package com.sr.smart_civic_platform.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -47,8 +48,16 @@ import com.sr.smart_civic_platform.security.jwt.JwtAuthenticationFilter;
  * Disabled — কারণ stateless REST API তে CSRF token দরকার নেই
  * (CSRF মূলত browser session/cookie based attack এর জন্য প্রাসঙ্গিক)।
  */
+/*
+ * Change in this step:
+ * @EnableMethodSecurity যোগ করা হয়েছে - এখন controller/service method
+ * এ @PreAuthorize("hasRole('ADMIN')") ব্যবহার করা যাবে।
+ */
+
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
