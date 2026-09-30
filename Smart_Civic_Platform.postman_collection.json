@@ -1,0 +1,429 @@
+{
+  "info": {
+    "name": "Smart Civic Platform API",
+    "description": "Complete collection for the Smart Civic Platform backend (Auth, Users, Categories, Complaints). Import this along with setting the `baseUrl` collection variable. Login/Register/Refresh requests have test scripts that automatically capture tokens into collection variables so subsequent requests work without manual copy-pasting.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "userRole", "value": "", "type": "string" },
+    { "key": "categoryId", "value": "", "type": "string" },
+    { "key": "complaintId", "value": "", "type": "string" },
+    { "key": "createdUserId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 - Auth",
+      "item": [
+        {
+          "name": "Register (Citizen)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Rahim Uddin\",\n  \"email\": \"rahim@example.com\",\n  \"password\": \"SecurePass123\",\n  \"phone\": \"01712345678\"\n}"
+            },
+            "auth": { "type": "noauth" }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success) {",
+                  "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "    pm.collectionVariables.set('userId', res.data.user.id);",
+                  "    pm.collectionVariables.set('userRole', res.data.user.role);",
+                  "    console.log('Logged in as', res.data.user.email, '-', res.data.user.role);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rahim@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "auth": { "type": "noauth" }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success) {",
+                  "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "    console.log('Tokens rotated');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "auth": { "type": "noauth" }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "logout"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/v1/users/me", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "me"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/users/me", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "me"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Rahim Uddin Updated\",\n  \"phone\": \"01900000000\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User (Admin only - Staff/Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success) { pm.collectionVariables.set('createdUserId', res.data.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/users", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Karim Staff\",\n  \"email\": \"karim@example.com\",\n  \"password\": \"StaffPass123\",\n  \"role\": \"STAFF\",\n  \"phone\": \"01711111111\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Users (Admin only, paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "role", "value": "STAFF", "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Status (Admin only)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{createdUserId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{createdUserId}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Categories",
+      "item": [
+        {
+          "name": "Create Category (Admin only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success) { pm.collectionVariables.set('categoryId', res.data.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categories", "host": ["{{baseUrl}}"], "path": ["api", "v1", "categories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Road\",\n  \"description\": \"Road damage, potholes\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Categories (active only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/v1/categories", "host": ["{{baseUrl}}"], "path": ["api", "v1", "categories"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Categories (Admin, include inactive)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories?includeInactive=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "categories"],
+              "query": [{ "key": "includeInactive", "value": "true" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category (Admin only)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "categories", "{{categoryId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Road damage, potholes, broken pavement\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category Status (Admin only)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "categories", "{{categoryId}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Complaints",
+      "item": [
+        {
+          "name": "Create Complaint (Citizen only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success) { pm.collectionVariables.set('complaintId', res.data.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/complaints", "host": ["{{baseUrl}}"], "path": ["api", "v1", "complaints"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Big pothole on main road\",\n  \"description\": \"There is a dangerous pothole near Gulshan 2 circle\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"address\": \"Gulshan 2, Dhaka\",\n  \"latitude\": 23.7925,\n  \"longitude\": 90.4078\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Complaints (Citizen only, paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/complaints/my?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "complaints", "my"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assigned Complaints (Staff only, paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/complaints/assigned?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "complaints", "assigned"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Complaints (Staff/Admin, filtered+paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/complaints?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "complaints"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "status", "value": "VERIFIED", "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Complaint By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/complaints/{{complaintId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "complaints", "{{complaintId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Complaint Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/complaints/{{complaintId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "complaints", "{{complaintId}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"UNDER_REVIEW\",\n  \"note\": \"Reviewing the reported issue\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 - Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/v1/health", "host": ["{{baseUrl}}"], "path": ["api", "v1", "health"] },
+            "auth": { "type": "noauth" }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
